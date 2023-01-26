@@ -11,7 +11,6 @@ struct Cli {
 
 fn main() {
     let cli = Cli::parse();
-    println!("cards: {:?}", cli.cards);
     let cards: Vec<Card> = cli.cards.iter().map(|x| Card::from(x.as_str())).collect();
     let stage = Stage::new([cards[0], cards[1]], &cards[2..]);
     dbg!(&stage);

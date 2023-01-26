@@ -2,7 +2,7 @@ use heapless::Vec as HeaplessVec;
 use statistical::{mean, median, standard_deviation};
 use std::fmt::Debug;
 
-use crate::texas::{calc_hand, iter_all_cards, Card, Hand};
+use crate::texas::{calc_hand, iter_all_cards, Card, CardNum, Hand, Suit};
 
 pub struct Stage {
     pub_cards: HeaplessVec<Card, 5>,
@@ -25,11 +25,18 @@ pub struct WinRate {
     pub std: f64,
     pub min: f64,
     pub max: f64,
+    pub percentile75: f64,
+    pub percentile25: f64,
 }
 
 impl Stage {
     pub fn new(my_cards: [Card; 2], pub_cards: &[Card]) -> Self {
         let pub_cards = HeaplessVec::from_slice(pub_cards).unwrap();
+        assert!(
+            (pub_cards.len() >= 3 && pub_cards.len() <= 5) || pub_cards.is_empty(),
+            "Invalid pub_cards length {}",
+            pub_cards.len()
+        );
         Self {
             pub_cards,
             my_cards,
@@ -37,11 +44,18 @@ impl Stage {
     }
 
     pub fn win_rate(&self) -> WinRate {
-        let mut vec: HeaplessVec<Card, 7> = HeaplessVec::new();
-        vec.extend_from_slice(&self.pub_cards).unwrap();
-        vec.extend_from_slice(&self.my_cards).unwrap();
-        let my_hands = fill_and_get_all_hands(&vec);
-        let all_hands = fill_and_get_all_hands(&self.pub_cards);
+        let (my_hands, all_hands) = if self.pub_cards.is_empty() {
+            let my_hands = fill_5_and_get_all_hands(&self.my_cards);
+            let all_hands = fill_5_and_get_all_hands(&[]);
+            (my_hands, all_hands)
+        } else {
+            let mut vec: HeaplessVec<Card, 7> = HeaplessVec::new();
+            vec.extend_from_slice(&self.pub_cards).unwrap();
+            vec.extend_from_slice(&self.my_cards).unwrap();
+            let my_hands = fill_7_and_get_all_hands(&vec);
+            let all_hands = fill_7_and_get_all_hands(&self.pub_cards);
+            (my_hands, all_hands)
+        };
         let mut win_rates = Vec::with_capacity(my_hands.len());
         // dbg!(my_hands.len(), all_hands.len());
         // all_hands.iter().enumerate().for_each(|(i, x)| {
@@ -58,7 +72,9 @@ impl Stage {
         win_rates.sort_unstable_by(f64::total_cmp);
         WinRate {
             mean: mean(&win_rates),
-            median: median(&win_rates),
+            median: win_rates[win_rates.len() / 2],
+            percentile25: win_rates[win_rates.len() / 4],
+            percentile75: win_rates[win_rates.len() / 4 * 3],
             std: if win_rates.len() > 2 {
                 standard_deviation(&win_rates, None)
             } else {
@@ -93,7 +109,15 @@ fn get_max_hand(origin_cards: &[Card]) -> Hand {
     max_hand.unwrap()
 }
 
-fn fill_and_get_all_hands(cards: &[Card]) -> Vec<Hand> {
+fn fill_5_and_get_all_hands(cards: &[Card]) -> Vec<Hand> {
+    assert!(cards.len() <= 5);
+    let filled: Vec<HeaplessVec<Card, 7>> = append_n_cards(cards, 5 - cards.len());
+    let mut ans: Vec<Hand> = filled.into_iter().map(|x| calc_hand(&x)).collect();
+    ans.sort();
+    ans
+}
+
+fn fill_7_and_get_all_hands(cards: &[Card]) -> Vec<Hand> {
     assert!(cards.len() >= 3);
     let filled: Vec<HeaplessVec<Card, 7>> = append_n_cards(cards, 7 - cards.len());
     let mut ans: Vec<Hand> = filled.into_iter().map(|x| get_max_hand(&x)).collect();
@@ -137,7 +161,7 @@ fn append_n_cards(cards: &[Card], n: usize) -> Vec<HeaplessVec<Card, 7>> {
 #[cfg(test)]
 mod test {
     use super::{append_n_cards, get_max_hand, Stage};
-    use crate::{texas::HandType, win_rate::fill_and_get_all_hands};
+    use crate::{texas::HandType, win_rate::fill_7_and_get_all_hands};
 
     #[test]
     fn test_max_hand() {
@@ -156,7 +180,7 @@ mod test {
 
     #[test]
     fn test_append_cards() {
-        dbg!(fill_and_get_all_hands(&[
+        dbg!(fill_7_and_get_all_hands(&[
             "41".into(),
             "31".into(),
             "21".into(),
@@ -197,7 +221,7 @@ mod test {
 
     #[test]
     fn should_i_wait_for_flush() {
-        let hands = fill_and_get_all_hands(&[
+        let hands = fill_7_and_get_all_hands(&[
             "41".into(),
             "48".into(),
             "49".into(),
