@@ -1,7 +1,7 @@
 mod texas;
 mod win_rate;
 use clap::Parser;
-use texas_win_rate::{texas::Card, win_rate::Stage};
+use {texas::Card, win_rate::Stage};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]

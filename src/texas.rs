@@ -251,7 +251,7 @@ impl From<usize> for CardNum {
             11 => CardNum::Jack,
             12 => CardNum::Queen,
             13 => CardNum::King,
-            x => panic!("Invalid card type {}", x),
+            x => panic!("Invalid card type {x}"),
         }
     }
 }
@@ -272,7 +272,7 @@ impl From<&str> for CardNum {
             "11" | "J" => CardNum::Jack,
             "12" | "Q" => CardNum::Queen,
             "13" | "K" => CardNum::King,
-            x => panic!("Invalid card type {}", x),
+            x => panic!("Invalid card type {x}"),
         }
     }
 }
@@ -310,7 +310,7 @@ impl From<usize> for Suit {
             2 => Suit::Diamond,
             3 => Suit::Club,
             4 => Suit::Spade,
-            _ => panic!("Invalid suit {}", value),
+            _ => panic!("Invalid suit {value}"),
         }
     }
 }
@@ -385,14 +385,17 @@ impl Ord for Hand {
 }
 
 impl Hand {
+    #[inline(always)]
     pub fn hand_type(&self) -> HandType {
         self.hand
     }
 
+    #[inline(always)]
     pub fn cards(&self) -> &[Card] {
         &self.cards
     }
 
+    #[inline(always)]
     pub(crate) fn cmp_cards(&self) -> &[CardNum] {
         &self.hand_cmp_cards
     }
@@ -523,7 +526,7 @@ impl From<&str> for Card {
                 num: CardNum::from(&value[1..]),
             },
             _ => {
-                panic!("Invalid card {}", value)
+                panic!("Invalid card {value}")
             }
         }
     }

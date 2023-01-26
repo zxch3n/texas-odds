@@ -1,8 +1,8 @@
 use heapless::Vec as HeaplessVec;
-use statistical::{mean, median, standard_deviation};
+use statistical::{mean, standard_deviation};
 use std::fmt::Debug;
 
-use crate::texas::{calc_hand, iter_all_cards, Card, CardNum, Hand, Suit};
+use crate::texas::{calc_hand, iter_all_cards, Card, Hand};
 
 pub struct Stage {
     pub_cards: HeaplessVec<Card, 5>,
@@ -21,12 +21,12 @@ impl Debug for Stage {
 #[derive(Debug, Clone, Copy)]
 pub struct WinRate {
     pub mean: f64,
-    pub median: f64,
-    pub std: f64,
     pub min: f64,
     pub max: f64,
-    pub percentile75: f64,
     pub percentile25: f64,
+    pub percentile75: f64,
+    pub std: f64,
+    pub median: f64,
 }
 
 impl Stage {
