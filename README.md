@@ -1,8 +1,10 @@
 # Texas Hold'em Winning Percentage Calculator
 
-(A hobby project just for fun 🦀
+(A hobby project just for fun 🦀)
 
 ## Usage
+
+> Currently you need to install rust and clone this project to run the code
 
 **`cargo run -r HK DA`**
 
@@ -71,6 +73,58 @@
         FourOfAKind: -0.00013805522208883554,
         StraightFlush: -1.3851694523963431e-5,
         RoyalFlush: -1.5390771693292702e-6,
+    },
+}
+```
+
+```log
+> cargo run -r 1K 2A 33 44 12 13
+
+[src/main.rs:17] &stage = Stage {
+    pub_cards: [
+        ♣️3,
+        ♠️4,
+        ♥️2,
+        ♥️3,
+    ],
+    my_cards: [
+        ♥️K,
+        ♦️A,
+    ],
+}
+[src/main.rs:18] stage.win_rate() = WinRate {
+    mean: 0.500071642601456,
+    min: 0.3593894542090657,
+    max: 0.9062789084181314,
+    percentile25: 0.3671947271045328,
+    median: 0.37696577243293244,
+    percentile75: 0.5137604070305273,
+    std: 0.19316661244457398,
+    self_rate: {
+        Pair: 0.6086956521739131,
+        TwoPair: 0.2608695652173913,
+        ThreeOfAKind: 0.043478260869565216,
+        Straight: 0.08695652173913043,
+    },
+    other_rate: {
+        Pair: 0.38245837187789083,
+        TwoPair: 0.39714384828862165,
+        ThreeOfAKind: 0.07955596669750231,
+        Straight: 0.07487280296022202,
+        Flush: 0.009424144310823312,
+        FullHouse: 0.05365402405180388,
+        FourOfAKind: 0.0027752081406105457,
+        StraightFlush: 0.00011563367252543941,
+    },
+    diff_rate: {
+        Pair: 0.22623728029602225,
+        TwoPair: -0.13627428307123035,
+        ThreeOfAKind: -0.036077705827937095,
+        Straight: 0.012083718778908417,
+        Flush: -0.009424144310823312,
+        FullHouse: -0.05365402405180388,
+        FourOfAKind: -0.0027752081406105457,
+        StraightFlush: -0.00011563367252543941,
     },
 }
 ```
