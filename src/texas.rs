@@ -9,7 +9,7 @@ pub enum Suit {
     Spade,
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum HandType {
     /// 高牌
     HighCard,

@@ -1,8 +1,11 @@
 use heapless::Vec as HeaplessVec;
 use statistical::{mean, standard_deviation};
-use std::fmt::Debug;
+use std::{
+    collections::{BTreeMap, HashMap},
+    fmt::Debug,
+};
 
-use crate::texas::{calc_hand, iter_all_cards, Card, Hand};
+use crate::texas::{calc_hand, iter_all_cards, Card, Hand, HandType};
 
 pub struct Stage {
     pub_cards: HeaplessVec<Card, 5>,
@@ -18,15 +21,18 @@ impl Debug for Stage {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct WinRate {
     pub mean: f64,
     pub min: f64,
     pub max: f64,
     pub percentile25: f64,
+    pub median: f64,
     pub percentile75: f64,
     pub std: f64,
-    pub median: f64,
+    pub self_rate: BTreeMap<HandType, f64>,
+    pub other_rate: BTreeMap<HandType, f64>,
+    pub diff_rate: BTreeMap<HandType, f64>,
 }
 
 impl Stage {
@@ -61,8 +67,8 @@ impl Stage {
         // all_hands.iter().enumerate().for_each(|(i, x)| {
         //     println!("{}: {:?}", i, x);
         // });
-        for hand in my_hands {
-            let rank = match all_hands.binary_search_by(|x| x.cmp(&hand)) {
+        for hand in my_hands.iter() {
+            let rank = match all_hands.binary_search_by(|x| x.cmp(hand)) {
                 Ok(i) => i,
                 Err(i) => i,
             };
@@ -70,6 +76,8 @@ impl Stage {
             win_rates.push(win_rate);
         }
         win_rates.sort_unstable_by(f64::total_cmp);
+        let self_rate = count_hand_type(&my_hands);
+        let other_rate = count_hand_type(&all_hands);
         WinRate {
             mean: mean(&win_rates),
             median: win_rates[win_rates.len() / 2],
@@ -82,8 +90,35 @@ impl Stage {
             },
             min: win_rates[0],
             max: win_rates[win_rates.len() - 1],
+            diff_rate: self_rate
+                .iter()
+                .map(|(k, v)| {
+                    let other = other_rate.get(k).unwrap_or(&0.);
+                    (*k, v - other)
+                })
+                .chain(other_rate.iter().map(|(k, v)| {
+                    let this = self_rate.get(k).unwrap_or(&0.);
+                    (*k, this - v)
+                }))
+                .collect(),
+            self_rate,
+            other_rate,
         }
     }
+}
+
+fn count_hand_type(hands: &[Hand]) -> BTreeMap<HandType, f64> {
+    let mut map = BTreeMap::new();
+    for hand in hands {
+        let count = map.entry(hand.hand_type()).or_insert(0.);
+        *count += 1.;
+    }
+
+    for (_, value) in map.iter_mut() {
+        *value /= hands.len() as f64;
+    }
+
+    map
 }
 
 fn get_max_hand(origin_cards: &[Card]) -> Hand {

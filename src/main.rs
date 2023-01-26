@@ -1,3 +1,4 @@
+mod sim;
 mod texas;
 mod win_rate;
 use clap::Parser;
