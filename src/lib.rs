@@ -1,2 +1,2 @@
-mod texas;
-mod win_rate;
+pub mod texas;
+pub mod win_rate;

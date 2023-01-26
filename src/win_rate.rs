@@ -1,11 +1,21 @@
 use heapless::Vec as HeaplessVec;
-use statistical::{mean, median, standard_deviation, standard_scores};
+use statistical::{mean, median, standard_deviation};
+use std::fmt::Debug;
 
 use crate::texas::{calc_hand, iter_all_cards, Card, Hand};
 
 pub struct Stage {
     pub_cards: HeaplessVec<Card, 5>,
     my_cards: [Card; 2],
+}
+
+impl Debug for Stage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Stage")
+            .field("pub_cards", &self.pub_cards)
+            .field("my_cards", &self.my_cards)
+            .finish()
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -33,7 +43,7 @@ impl Stage {
         let my_hands = fill_and_get_all_hands(&vec);
         let all_hands = fill_and_get_all_hands(&self.pub_cards);
         let mut win_rates = Vec::with_capacity(my_hands.len());
-        dbg!(my_hands.len(), all_hands.len());
+        // dbg!(my_hands.len(), all_hands.len());
         // all_hands.iter().enumerate().for_each(|(i, x)| {
         //     println!("{}: {:?}", i, x);
         // });
@@ -127,11 +137,7 @@ fn append_n_cards(cards: &[Card], n: usize) -> Vec<HeaplessVec<Card, 7>> {
 #[cfg(test)]
 mod test {
     use super::{append_n_cards, get_max_hand, Stage};
-    use crate::{
-        texas::{CardNum, HandType},
-        win_rate::fill_and_get_all_hands,
-    };
-    use std::vec::Vec as StdVec;
+    use crate::{texas::HandType, win_rate::fill_and_get_all_hands};
 
     #[test]
     fn test_max_hand() {
