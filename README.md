@@ -1,6 +1,8 @@
 # Texas Hold'em Winning Percentage Calculator
 
-> A hobby project just for fun
+(A hobby project just for fun 🦀
+
+## Usage
 
 **`cargo run -r HK DA`**
 
