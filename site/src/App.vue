@@ -64,19 +64,29 @@
     </div>
 
     <button :disabled="!btnValid" @click="calculate">Calculate</button>
-    <div class="ans" :style="{ opacity: ans ? 1 : 0 }">
+    <div class="ans" :hidden="!ans">
       <p>Win: {{ ans && (ans.win * 100).toFixed(2) }}%</p>
       <p>Tie: {{ ans && (ans.tie * 100).toFixed(2) }}%</p>
       <pre>
 Hand Rate: {{ ans && JSON.stringify(ans.hand_type_rates, null, 2) }}</pre
       >
     </div>
+    <div class="help" :hidden="!!ans">
+      <p>Input format:</p>
+      <pre>h2 d3 s4 c5 d13</pre>
+      <pre>️♥️2, ♦️3 ♠️4, ♣️5, ♦️K</pre>
+      <ul style="margin-left: -1.5em">
+        <li>h = hearts 红心 ♥️</li>
+        <li>d = diamonds 方块 ♦️</li>
+        <li>s = spades 黑桃 ♠</li>
+        <li>c = clubs 梅花 ♣️</li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <style scoped>
   .input-container {
-    width: 375px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -110,5 +120,22 @@ Hand Rate: {{ ans && JSON.stringify(ans.hand_type_rates, null, 2) }}</pre
   .ans {
     text-align: left;
     height: 400px;
+    max-width: 360px;
+    white-space: pre-wrap;
+  }
+
+  .ans pre {
+    font-size: 0.85em;
+    line-height: 1.4em;
+  }
+
+  .help {
+    margin-top: 40px;
+    opacity: 0.9;
+    color: #bbb;
+  }
+
+  .help ul {
+    list-style-type: none;
   }
 </style>
