@@ -1,7 +1,10 @@
 use heapless::Vec;
 use std::fmt::{Debug, Display};
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
 
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub enum Suit {
     Heart,
     Diamond,
@@ -10,6 +13,7 @@ pub enum Suit {
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub enum HandType {
     /// 高牌
     HighCard,
@@ -33,7 +37,37 @@ pub enum HandType {
     RoyalFlush,
 }
 
+impl Display for HandType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            HandType::HighCard => write!(f, "HighCard"),
+            HandType::Pair => write!(f, "Pair"),
+            HandType::TwoPair => write!(f, "TwoPair"),
+            HandType::ThreeOfAKind => write!(f, "ThreeOfAKind"),
+            HandType::Straight => write!(f, "Straight"),
+            HandType::Flush => write!(f, "Flush"),
+            HandType::FullHouse => write!(f, "FullHouse"),
+            HandType::FourOfAKind => write!(f, "FourOfAKind"),
+            HandType::StraightFlush => write!(f, "StraightFlush"),
+            HandType::RoyalFlush => write!(f, "RoyalFlush"),
+        }
+    }
+}
+
 impl HandType {
+    pub const ALL: [HandType; 10] = [
+        HandType::HighCard,
+        HandType::Pair,
+        HandType::TwoPair,
+        HandType::ThreeOfAKind,
+        HandType::Straight,
+        HandType::Flush,
+        HandType::FullHouse,
+        HandType::FourOfAKind,
+        HandType::StraightFlush,
+        HandType::RoyalFlush,
+    ];
+
     /// cards should be sorted by number
     fn is_royal_flush(cards: &[Card]) -> bool {
         Self::is_strait_flush(cards) && cards[0].num == CardNum::Ten
@@ -198,6 +232,7 @@ impl HandType {
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub enum CardNum {
     Two,
     Three,

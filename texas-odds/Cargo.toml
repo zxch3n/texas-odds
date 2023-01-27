@@ -9,3 +9,7 @@ edition = "2021"
 clap = { version = "4.1.4", features = ["derive"] }
 heapless = "0.7.16"
 statistical = "1.0.0"
+wasm-bindgen = { version = "0.2.63", optional = true }
+
+[features]
+wasm = ["wasm-bindgen"]

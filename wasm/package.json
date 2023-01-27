@@ -1,0 +1,14 @@
+{
+  "name": "texas-odds",
+  "version": "0.1.0",
+  "description": "",
+  "main": "nodejs/wasm.js",
+  "module": "bundler/wasm.js",
+  "scripts": {
+    "build": "wasm-pack build --release -t bundler -d bundler && wasm-pack build --release -t web -d web && wasm-pack build --release -t nodejs -d nodejs "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT or Apache-2.0",
+  "devDependencies": {}
+}

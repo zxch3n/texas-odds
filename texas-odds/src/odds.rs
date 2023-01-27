@@ -272,6 +272,9 @@ fn append_n_cards(cards: &[Card], n: usize) -> Vec<HeaplessVec<Card, 7>> {
     result
 }
 
+#[cfg(feature = "wasm")]
+mod wasm {}
+
 #[cfg(test)]
 mod test {
     use super::{append_n_cards, get_max_hand, Stage};
