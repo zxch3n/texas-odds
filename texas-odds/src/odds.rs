@@ -208,7 +208,7 @@ fn append_n_cards(cards: &[Card], n: usize) -> Vec<HeaplessVec<Card, 7>> {
 #[cfg(test)]
 mod test {
     use super::{append_n_cards, get_max_hand, Stage};
-    use crate::{texas::HandType, win_rate::fill_7_and_get_all_hands};
+    use crate::{odds::fill_7_and_get_all_hands, texas::HandType};
 
     #[test]
     fn test_max_hand() {

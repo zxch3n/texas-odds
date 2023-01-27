@@ -1,8 +1,8 @@
+mod odds;
 mod sim;
 mod texas;
-mod win_rate;
 use clap::Parser;
-use {texas::Card, win_rate::Stage};
+use {odds::Stage, texas::Card};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
