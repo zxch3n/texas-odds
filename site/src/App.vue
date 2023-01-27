@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import GitHub from "./components/GitHub.vue";
   import { computed, ref } from "vue";
   import { parseCards } from "./parseCard";
   import { calc, Odds } from "./calc";
@@ -82,6 +83,11 @@ Hand Rate: {{ ans && JSON.stringify(ans.hand_type_rates, null, 2) }}</pre
         <li>c = clubs 梅花 ♣️</li>
       </ul>
     </div>
+    <div class="repo">
+      <a href="https://github.com/zxch3n/texas-odds" target="_blank"
+        ><GitHub style="font-size: 1.3em; margin-right: 4px" />Made by zxch3n</a
+      >
+    </div>
   </div>
 </template>
 
@@ -90,7 +96,6 @@ Hand Rate: {{ ans && JSON.stringify(ans.hand_type_rates, null, 2) }}</pre
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    position: relative;
   }
 
   .input-container > div {
@@ -137,5 +142,21 @@ Hand Rate: {{ ans && JSON.stringify(ans.hand_type_rates, null, 2) }}</pre
 
   .help ul {
     list-style-type: none;
+  }
+
+  .repo {
+    margin-top: 40px;
+    font-size: 0.9em;
+    color: grey;
+  }
+
+  .repo a {
+    color: grey;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .repo a:hover {
+    color: #aaa;
   }
 </style>
