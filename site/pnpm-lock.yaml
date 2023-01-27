@@ -1,0 +1,7 @@
+lockfileVersion: 5.4
+
+specifiers:
+  texas-odds: 0.1.0
+
+dependencies:
+  texas-odds: link:../wasm
