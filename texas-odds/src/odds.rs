@@ -1,20 +1,44 @@
 use heapless::Vec as HeaplessVec;
 use statistical::{mean, standard_deviation};
-use std::{collections::BTreeMap, fmt::Debug};
+use std::{
+    collections::BTreeMap,
+    fmt::{Debug, Display},
+};
 
 use crate::texas::{calc_hand, iter_all_cards, Card, Hand, HandType};
 
+#[derive(Debug)]
 pub struct Stage {
     pub_cards: HeaplessVec<Card, 5>,
     my_cards: [Card; 2],
 }
 
-impl Debug for Stage {
+impl Display for Stage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Stage")
-            .field("pub_cards", &self.pub_cards)
-            .field("my_cards", &self.my_cards)
-            .finish()
+        write!(
+            f,
+            "hole_cards: {:?}, community_cards: {:?}",
+            self.my_cards, self.pub_cards
+        )
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Odds {
+    pub win: f64,
+    pub tie: f64,
+    pub hand_rate: BTreeMap<HandType, f64>,
+}
+
+impl Display for Odds {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "win: {:.2}%, tie: {:.2}%",
+            self.win * 100.0,
+            self.tie * 100.0
+        )
+        .and_then(|_| writeln!(f, "hand_rate: {:?}", self.hand_rate))
     }
 }
 
@@ -48,18 +72,7 @@ impl Stage {
     }
 
     pub fn win_rate(&self) -> WinRate {
-        let (my_hands, all_hands) = if self.pub_cards.is_empty() {
-            let my_hands = fill_5_and_get_all_hands(&self.my_cards);
-            let all_hands = fill_5_and_get_all_hands(&[]);
-            (my_hands, all_hands)
-        } else {
-            let mut vec: HeaplessVec<Card, 7> = HeaplessVec::new();
-            vec.extend_from_slice(&self.pub_cards).unwrap();
-            vec.extend_from_slice(&self.my_cards).unwrap();
-            let my_hands = fill_7_and_get_all_hands(&vec);
-            let all_hands = fill_7_and_get_all_hands(&self.pub_cards);
-            (my_hands, all_hands)
-        };
+        let (my_hands, all_hands) = self.enumerate_hands();
         let mut win_rates = Vec::with_capacity(my_hands.len());
         let mut tie_rates = Vec::with_capacity(my_hands.len());
         // dbg!(my_hands.len(), all_hands.len());
@@ -87,8 +100,8 @@ impl Stage {
             tie_rates.push(tie_rate);
         }
         win_rates.sort_unstable_by(f64::total_cmp);
-        let self_rate = count_hand_type(&my_hands);
-        let other_rate = count_hand_type(&all_hands);
+        let self_rate = count_hand_type_freq(&my_hands);
+        let other_rate = count_hand_type_freq(&all_hands);
         WinRate {
             mean: mean(&win_rates),
             mean_tie_rate: mean(&tie_rates),
@@ -117,9 +130,63 @@ impl Stage {
             other_rate,
         }
     }
+
+    fn enumerate_hands(&self) -> (Vec<Hand>, Vec<Hand>) {
+        let (my_hands, all_hands) = if self.pub_cards.is_empty() {
+            // FIXME: this is not accurate
+            let my_hands = fill_5_and_get_all_hands(&self.my_cards);
+            let all_hands = fill_5_and_get_all_hands(&[]);
+            (my_hands, all_hands)
+        } else {
+            let mut vec: HeaplessVec<Card, 7> = HeaplessVec::new();
+            vec.extend_from_slice(&self.pub_cards).unwrap();
+            vec.extend_from_slice(&self.my_cards).unwrap();
+            let my_hands = fill_7_and_get_all_hands(&vec);
+            let all_hands = fill_7_and_get_all_hands(&self.pub_cards);
+            (my_hands, all_hands)
+        };
+        (my_hands, all_hands)
+    }
+
+    pub fn win_rate_with_n_players(&self, n: usize) -> Odds {
+        assert!(n >= 2, "n_players must be >= 2");
+        let (my_hands, all_hands) = self.enumerate_hands();
+        let mut win_rates = Vec::with_capacity(my_hands.len());
+        let mut tie_rates = Vec::with_capacity(my_hands.len());
+        for hand in my_hands.iter() {
+            let without_tie_rank = match all_hands.binary_search_by(|x| match x.cmp(hand) {
+                std::cmp::Ordering::Equal => std::cmp::Ordering::Greater,
+                x => x,
+            }) {
+                Ok(i) => i,
+                Err(i) => i,
+            };
+            let win_rate = without_tie_rank as f64 / all_hands.len() as f64;
+            let with_tie_rank = match all_hands.binary_search_by(|x| match x.cmp(hand) {
+                std::cmp::Ordering::Equal => std::cmp::Ordering::Less,
+                x => x,
+            }) {
+                Ok(i) => i,
+                Err(i) => i,
+            };
+            let tie_rate = (with_tie_rank - without_tie_rank) as f64 / all_hands.len() as f64;
+            let win_or_tie = win_rate + tie_rate;
+
+            let lose_rate_with_n_players = 1. - win_or_tie.powi(n as i32);
+            let win_rate_with_n_players = win_rate.powi(n as i32);
+            let tie_rate_with_n_players = 1. - lose_rate_with_n_players - win_rate_with_n_players;
+            win_rates.push(win_rate_with_n_players);
+            tie_rates.push(tie_rate_with_n_players);
+        }
+        Odds {
+            win: mean(&win_rates),
+            tie: mean(&tie_rates),
+            hand_rate: count_hand_type_freq(&my_hands),
+        }
+    }
 }
 
-fn count_hand_type(hands: &[Hand]) -> BTreeMap<HandType, f64> {
+fn count_hand_type_freq(hands: &[Hand]) -> BTreeMap<HandType, f64> {
     let mut map = BTreeMap::new();
     for hand in hands {
         let count = map.entry(hand.hand_type()).or_insert(0.);
@@ -172,7 +239,7 @@ fn fill_7_and_get_all_hands(cards: &[Card]) -> Vec<Hand> {
     ans
 }
 
-// TODO: use iterator
+// TODO: Perf use iterator
 fn append_n_cards(cards: &[Card], n: usize) -> Vec<HeaplessVec<Card, 7>> {
     let mut result: Vec<HeaplessVec<Card, 7>> = Vec::new();
     result.push(HeaplessVec::new());
@@ -264,6 +331,21 @@ mod test {
             ],
         );
         dbg!(stage.win_rate());
+    }
+
+    #[test]
+    fn win_rate_3() {
+        let stage = Stage::new(
+            ["34".into(), "45".into()],
+            &[
+                "2K".into(),
+                "12".into(),
+                "23".into(),
+                "17".into(),
+                "19".into(),
+            ],
+        );
+        dbg!(stage.win_rate_with_n_players(5));
     }
 
     #[test]

@@ -9,9 +9,3 @@ edition = "2021"
 clap = { version = "4.1.4", features = ["derive"] }
 heapless = "0.7.16"
 statistical = "1.0.0"
-
-[profile.release]
-opt-level = 3
-
-[profile.test]
-opt-level = 3

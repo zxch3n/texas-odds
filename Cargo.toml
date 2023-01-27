@@ -1,2 +1,8 @@
 [workspace]
 members = ["texas-odds", "wasm"]
+
+[profile.release]
+opt-level = 3
+
+[profile.test]
+opt-level = 3

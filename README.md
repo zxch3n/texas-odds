@@ -7,9 +7,47 @@ Currently it only calculate the winning rate when there is only one opponent.
 
 (A hobby project just for fun 🦀)
 
-## Usage
+## CLI Usage
 
 > Currently you need to install rust and clone this project to run the code
+
+```
+Texas Hold'em odds calculator
+
+Usage: texas-odds [OPTIONS] <HOLE_CARDS_0> <HOLE_CARDS_1> [COMMUNITY_CARDS]...
+
+Arguments:
+  <HOLE_CARDS_0>
+          Your cards no.1  -- 手牌 1
+
+  <HOLE_CARDS_1>
+          Your cards no.2  -- 手牌 2
+
+  [COMMUNITY_CARDS]...
+          The community cards -- 公开池
+
+          It should be empty or at least 3 cards.
+
+          Input format:
+
+          >  h2 d3 s4 c5 d13
+
+          - hole_cards = [♥️2, ♦️3]
+
+          - community_cards = [♠️4, ♣️5, ♦️K]
+
+          h = hearts 红心 ♥️ , d = diamonds 方块 ♦️, s = spades 黑桃 ♠️, c = clubs 梅花 ♣️
+
+Options:
+  -n, --n-players <N_PLAYERS>
+          The number of players (default = 2)
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
+```
 
 **`cargo run -r HK DA`**
 
@@ -29,42 +67,10 @@ Currently it only calculate the winning rate when there is only one opponent.
 **Example Output**
 
 ```log
-> cargo run -r 1K 2A 23 34 35 36 37
+> cargo run -r SK HA D10 CJ C12 -n 8
 
-[src/main.rs:17] &stage = Stage {
-    pub_cards: [
-        ♦️3,
-        ♣️4,
-        ♣️5,
-        ♣️6,
-        ♣️7,
-    ],
-    my_cards: [
-        ♥️K,
-        ♦️A,
-    ],
-}
-[src/main.rs:18] stage.win_rate() = WinRate {
-    mean: 0.0,
-    mean_tie_rate: 0.5420906567992599,
-    min: 0.0,
-    max: 0.0,
-    percentile25: 0.0,
-    median: 0.0,
-    percentile75: 0.0,
-    std: 0.0,
-    self_rate: {
-        Straight: 1.0,
-    },
-    other_rate: {
-        Straight: 0.6503237742830712,
-        Flush: 0.26549491211840887,
-        StraightFlush: 0.0841813135985199,
-    },
-    diff_rate: {
-        Straight: 0.3496762257169288,
-        Flush: -0.26549491211840887,
-        StraightFlush: -0.0841813135985199,
-    },
-}
+8 Players
+hole_cards: [♠️K, ♥️A], community_cards: [♦️10, ♣️J, ♣️Q]
+win: 36.74%, tie: 30.09%
+hand_rate: {Straight: 1.0}
 ```
