@@ -3,7 +3,7 @@ import { Stage } from "texas-odds";
 export interface Odds {
   win: number;
   tie: number;
-  handRate: Record<string, number>;
+  hand_type_rates: Record<string, number>;
 }
 
 export function calc(
@@ -13,5 +13,7 @@ export function calc(
 ): Odds {
   const holeCards = holeCardsStr.split(" ");
   const stage = new Stage(players, holeCards[0], holeCards[1], community_card);
-  return stage.odds() as any as Odds;
+  const odds = stage.odds() as any as Odds;
+  console.log(odds);
+  return odds;
 }
