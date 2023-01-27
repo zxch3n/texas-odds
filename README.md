@@ -1,4 +1,7 @@
-# Texas Hold'em Odds Calculator
+<div align="center">
+  <h1>Texas Hold'em Odds Calculator</h1>
+  <h3> 德州扑克胜率计算器 </h3>
+</div>
 
 Currently it only calculate the winning rate when there is only one opponent.
 
