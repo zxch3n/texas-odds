@@ -38,7 +38,7 @@ impl Display for Odds {
             self.win * 100.0,
             self.tie * 100.0
         )
-        .and_then(|_| writeln!(f, "hand_rate: {:?}", self.hand_rate))
+        .and_then(|_| writeln!(f, "hand_rate: {:#?}", self.hand_rate))
     }
 }
 

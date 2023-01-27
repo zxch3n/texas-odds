@@ -74,3 +74,35 @@ hole_cards: [♠️K, ♥️A], community_cards: [♦️10, ♣️J, ♣️Q]
 win: 36.74%, tie: 30.09%
 hand_rate: {Straight: 1.0}
 ```
+
+```log
+> cargo run -r SK HA D10 CJ C8 -n 8
+
+8 Players
+hole_cards: [♠️K, ♥️A], community_cards: [♦️10, ♣️J, ♣️8]
+win: 11.48%, tie: 1.29%
+hand_rate: {
+    HighCard: 0.2960222016651249,
+    Pair: 0.42738205365402404,
+    TwoPair: 0.08325624421831637,
+    ThreeOfAKind: 0.013876040703052728,
+    Straight: 0.17946345975948197,
+}
+```
+
+```log
+> cargo run -r S1 HK -n 3
+
+3 Players
+hole_cards: [♠️A, ♥️K], community_cards: []
+win: 35.80%, tie: 0.03%
+hand_rate: {
+    HighCard: 0.5355102040816326,
+    Pair: 0.40408163265306124,
+    TwoPair: 0.04040816326530612,
+    ThreeOfAKind: 0.015714285714285715,
+    Straight: 0.0032653061224489797,
+    FullHouse: 0.0009183673469387755,
+    FourOfAKind: 0.00010204081632653062,
+}
+```
