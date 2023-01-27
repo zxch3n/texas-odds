@@ -1,4 +1,6 @@
-# Texas Hold'em Winning Percentage Calculator
+# Texas Hold'em Odds Calculator
+
+Currently it only calculate the winning rate when there is only one opponent.
 
 (A hobby project just for fun 🦀)
 
