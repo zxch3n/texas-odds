@@ -1,7 +1,11 @@
 [workspace]
 members = ["texas-odds", "wasm"]
 
+[profile.bench]
+opt-level = 3
+
 [profile.release]
+lto = true
 opt-level = 3
 
 [profile.test]
