@@ -356,7 +356,6 @@ pub struct Card {
 pub struct Hand {
     hand: HandType,
     hand_cmp_cards: Vec<CardNum, 5>,
-    cards: Vec<Card, 5>,
 }
 
 impl PartialEq for Hand {
@@ -391,82 +390,68 @@ impl Hand {
     }
 
     #[inline(always)]
-    pub fn cards(&self) -> &[Card] {
-        &self.cards
-    }
-
-    #[inline(always)]
+    #[allow(dead_code)]
     pub(crate) fn cmp_cards(&self) -> &[CardNum] {
         &self.hand_cmp_cards
     }
 }
 
 pub fn calc_hand(cards: &[Card]) -> Hand {
-    let mut cards = Vec::from_slice(cards).unwrap();
+    let mut cards: Vec<Card, 7> = Vec::from_slice(cards).unwrap();
     cards.sort_by_key(|x| x.num);
     if HandType::is_royal_flush(&cards) {
         Hand {
             hand: HandType::RoyalFlush,
             hand_cmp_cards: Vec::new(),
-            cards,
         }
     } else if HandType::is_strait_flush(&cards) {
         cards.reverse();
         Hand {
             hand: HandType::StraightFlush,
             hand_cmp_cards: cards.iter().map(|x| x.num).collect(),
-            cards,
         }
     } else if let Some(cmp) = HandType::four_of_a_kind(&cards) {
         Hand {
             hand: HandType::FourOfAKind,
             hand_cmp_cards: cmp,
-            cards,
         }
     } else if HandType::is_full_house(&cards) {
         cards.reverse();
         Hand {
             hand: HandType::FullHouse,
             hand_cmp_cards: cards.iter().map(|x| x.num).collect(),
-            cards,
         }
     } else if HandType::is_flush(&cards) {
         Hand {
             hand: HandType::Flush,
             hand_cmp_cards: cards.iter().map(|x| x.num).collect(),
-            cards,
         }
     } else if HandType::is_strait(&cards) {
         cards.reverse();
         Hand {
             hand: HandType::Straight,
             hand_cmp_cards: cards.iter().map(|x| x.num).collect(),
-            cards,
         }
     } else if let Some(cmp) = HandType::three_of_a_kind(&cards) {
         Hand {
             hand: HandType::ThreeOfAKind,
             hand_cmp_cards: cmp,
-            cards,
         }
     } else if let Some(cmp) = HandType::two_pair(&cards) {
         Hand {
             hand: HandType::TwoPair,
             hand_cmp_cards: cmp,
-            cards,
         }
     } else if let Some(cmp) = HandType::pair(&cards) {
         Hand {
             hand: HandType::Pair,
             hand_cmp_cards: cmp,
-            cards,
         }
     } else {
         cards.reverse();
         Hand {
             hand: HandType::HighCard,
             hand_cmp_cards: cards.iter().map(|x| x.num).collect(),
-            cards,
         }
     }
 }
