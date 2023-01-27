@@ -3,7 +3,7 @@
   <h3> 德州扑克胜率计算器 </h3>
 </div>
 
-Currently it only calculate the winning rate when there is only one opponent.
+[**Try it online**](https://texas-odds-aah9.vercel.app/)
 
 (A hobby project just for fun 🦀)
 
