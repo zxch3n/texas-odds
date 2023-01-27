@@ -5,7 +5,8 @@
   "main": "nodejs/wasm.js",
   "module": "bundler/wasm.js",
   "scripts": {
-    "build": "wasm-pack build --release -t bundler -d bundler && wasm-pack build --release -t web -d web && wasm-pack build --release -t nodejs -d nodejs "
+    "build": "wasm-pack build --release -t bundler -d bundler && wasm-pack build --release -t web -d web && wasm-pack build --release -t nodejs -d nodejs ",
+    "test": "pnpm run --dir example test"
   },
   "keywords": [],
   "author": "",

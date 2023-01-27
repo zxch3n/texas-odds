@@ -66,6 +66,14 @@ impl Odds {
         }
         obj
     }
+
+    pub fn to_obj(&self) -> Object {
+        let obj = Object::new();
+        Reflect::set(&obj, &"win".into(), &JsValue::from_f64(self.win)).unwrap();
+        Reflect::set(&obj, &"tie".into(), &JsValue::from_f64(self.tie)).unwrap();
+        Reflect::set(&obj, &"hand_type_rates".into(), &self.hand_type_rates()).unwrap();
+        obj
+    }
 }
 
 #[wasm_bindgen]
@@ -90,13 +98,13 @@ impl Stage {
         }
     }
 
-    pub fn odds(&mut self) -> Odds {
+    pub fn odds(&mut self) -> Object {
         if let Some(x) = self.odds {
-            return x;
+            return x.to_obj();
         }
 
         let odds = self.stage.win_rate_with_n_players(self.n_players);
         self.odds = Some(odds.into());
-        self.odds.unwrap()
+        self.odds.unwrap().to_obj()
     }
 }
