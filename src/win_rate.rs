@@ -1,9 +1,6 @@
 use heapless::Vec as HeaplessVec;
 use statistical::{mean, standard_deviation};
-use std::{
-    collections::{BTreeMap, HashMap},
-    fmt::Debug,
-};
+use std::{collections::BTreeMap, fmt::Debug};
 
 use crate::texas::{calc_hand, iter_all_cards, Card, Hand, HandType};
 
@@ -24,6 +21,7 @@ impl Debug for Stage {
 #[derive(Debug, Clone)]
 pub struct WinRate {
     pub mean: f64,
+    pub mean_tie_rate: f64,
     pub min: f64,
     pub max: f64,
     pub percentile25: f64,
@@ -63,23 +61,37 @@ impl Stage {
             (my_hands, all_hands)
         };
         let mut win_rates = Vec::with_capacity(my_hands.len());
+        let mut tie_rates = Vec::with_capacity(my_hands.len());
         // dbg!(my_hands.len(), all_hands.len());
         // all_hands.iter().enumerate().for_each(|(i, x)| {
         //     println!("{}: {:?}", i, x);
         // });
         for hand in my_hands.iter() {
-            let rank = match all_hands.binary_search_by(|x| x.cmp(hand)) {
+            let without_tie_rank = match all_hands.binary_search_by(|x| match x.cmp(hand) {
+                std::cmp::Ordering::Equal => std::cmp::Ordering::Greater,
+                x => x,
+            }) {
                 Ok(i) => i,
                 Err(i) => i,
             };
-            let win_rate = rank as f64 / all_hands.len() as f64;
+            let win_rate = without_tie_rank as f64 / all_hands.len() as f64;
+            let with_tie_rank = match all_hands.binary_search_by(|x| match x.cmp(hand) {
+                std::cmp::Ordering::Equal => std::cmp::Ordering::Less,
+                x => x,
+            }) {
+                Ok(i) => i,
+                Err(i) => i,
+            };
+            let tie_rate = (with_tie_rank - without_tie_rank) as f64 / all_hands.len() as f64;
             win_rates.push(win_rate);
+            tie_rates.push(tie_rate);
         }
         win_rates.sort_unstable_by(f64::total_cmp);
         let self_rate = count_hand_type(&my_hands);
         let other_rate = count_hand_type(&all_hands);
         WinRate {
             mean: mean(&win_rates),
+            mean_tie_rate: mean(&tie_rates),
             median: win_rates[win_rates.len() / 2],
             percentile25: win_rates[win_rates.len() / 4],
             percentile75: win_rates[win_rates.len() / 4 * 3],
