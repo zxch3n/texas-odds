@@ -7,7 +7,9 @@
   const players = ref(2);
   const holeCardsText = ref("");
   const commCardsText = ref("");
+  const dirty = ref(false);
   const holeCards = computed(() => {
+    dirty.value = true;
     try {
       return parseCards(holeCardsText.value);
     } catch (e) {
@@ -15,6 +17,7 @@
     }
   });
   const communityCards = computed(() => {
+    dirty.value = true;
     if (commCardsText.value.length === 0) {
       return [];
     }
@@ -38,6 +41,7 @@
   function calculate() {
     const odds = calc(players.value, holeCardsText.value, commCardsText.value);
     ans.value = odds;
+    dirty.value = false;
   }
 </script>
 
@@ -65,7 +69,7 @@
     </div>
 
     <button :disabled="!btnValid" @click="calculate">Calculate</button>
-    <div class="ans" :hidden="!ans">
+    <div class="ans" :hidden="!ans" :style="{ opacity: dirty ? 0.5 : 1 }">
       <p>Win: {{ ans && (ans.win * 100).toFixed(2) }}%</p>
       <p>Tie: {{ ans && (ans.tie * 100).toFixed(2) }}%</p>
       <pre>
