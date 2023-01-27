@@ -3,6 +3,7 @@ use statistical::{mean, standard_deviation};
 use std::{
     collections::BTreeMap,
     fmt::{Debug, Display},
+    iter,
 };
 
 use crate::texas::{calc_hand, iter_all_cards, Card, Hand, HandType};
@@ -225,51 +226,81 @@ fn get_max_hand(origin_cards: &[Card]) -> Hand {
 
 fn fill_5_and_get_all_hands(cards: &[Card]) -> Vec<Hand> {
     assert!(cards.len() <= 5);
-    let filled: Vec<HeaplessVec<Card, 7>> = append_n_cards(cards, 5 - cards.len());
-    let mut ans: Vec<Hand> = filled.into_iter().map(|x| calc_hand(&x)).collect();
+    let mut ans: Vec<Hand> = enumerate_n_cards(cards, 5 - cards.len())
+        .map(|x| calc_hand(&x))
+        .collect();
     ans.sort();
     ans
 }
 
 fn fill_7_and_get_all_hands(cards: &[Card]) -> Vec<Hand> {
     assert!(cards.len() >= 3);
-    let filled: Vec<HeaplessVec<Card, 7>> = append_n_cards(cards, 7 - cards.len());
-    let mut ans: Vec<Hand> = filled.into_iter().map(|x| get_max_hand(&x)).collect();
+    let mut ans: Vec<Hand> = enumerate_n_cards(cards, 7 - cards.len())
+        .map(|x| get_max_hand(&x))
+        .collect();
     ans.sort();
     ans
 }
 
-// TODO: Perf use iterator
-fn append_n_cards(cards: &[Card], n: usize) -> Vec<HeaplessVec<Card, 7>> {
-    let mut result: Vec<HeaplessVec<Card, 7>> = Vec::new();
-    result.push(HeaplessVec::new());
-    for _ in 0..n {
-        let cur_result = std::mem::take(&mut result);
-        for each in cur_result {
-            if let Some(last) = each.last() {
-                for card in iter_all_cards()
-                    .skip_while(|x| x != last)
-                    .filter(|x| !cards.contains(x) && !each.contains(x))
-                {
-                    let mut new_cards = each.clone();
-                    new_cards.push(card).unwrap();
-                    result.push(new_cards);
-                }
+fn enumerate_n_cards(cards: &[Card], n: usize) -> impl Iterator<Item = HeaplessVec<Card, 7>> {
+    let mut iter_stacks: HeaplessVec<usize, 7> = HeaplessVec::new();
+    let mut all_cards: HeaplessVec<Card, 52> = HeaplessVec::new();
+    for card in iter_all_cards().filter(|x| !cards.contains(x)) {
+        all_cards.push(card).unwrap();
+    }
+    for i in 0..n {
+        iter_stacks.push(i).unwrap();
+    }
+
+    let cards: Vec<_> = cards.to_vec();
+    let mut empty_returned = false;
+    std::iter::from_fn(move || {
+        if iter_stacks.is_empty() {
+            if empty_returned {
+                return None;
             } else {
-                for card in iter_all_cards().filter(|x| !cards.contains(x)) {
-                    let mut new_cards = each.clone();
-                    new_cards.push(card).unwrap();
-                    result.push(new_cards);
-                }
+                empty_returned = true;
+                let mut result: HeaplessVec<Card, 7> = HeaplessVec::new();
+                result.extend_from_slice(&cards).unwrap();
+                return Some(result);
             }
         }
-    }
 
-    for each in result.iter_mut() {
-        each.extend_from_slice(cards).unwrap();
-    }
+        if iter_stacks[0] == all_cards.len() {
+            return None;
+        }
 
-    result
+        let mut result: HeaplessVec<Card, 7> = HeaplessVec::new();
+        let mut inc_index = n - 1;
+        for i in 0..n {
+            let index = iter_stacks[i];
+            result.push(all_cards[index]).unwrap();
+        }
+
+        let origin_inc_index = inc_index;
+        loop {
+            if iter_stacks[inc_index] >= all_cards.len() - n + inc_index {
+                if inc_index == 0 {
+                    iter_stacks[inc_index] = all_cards.len();
+                    break;
+                } else {
+                    inc_index -= 1;
+                }
+            } else {
+                iter_stacks[inc_index] += 1;
+                break;
+            }
+        }
+        for i in inc_index + 1..=origin_inc_index {
+            if i == 0 {
+                continue;
+            }
+            iter_stacks[i] = iter_stacks[i - 1] + 1;
+        }
+
+        result.extend_from_slice(&cards).unwrap();
+        Some(result)
+    })
 }
 
 #[cfg(feature = "wasm")]
@@ -277,7 +308,7 @@ mod wasm {}
 
 #[cfg(test)]
 mod test {
-    use super::{append_n_cards, get_max_hand, Stage};
+    use super::{enumerate_n_cards, get_max_hand, Stage};
     use crate::{odds::fill_7_and_get_all_hands, texas::HandType};
 
     #[test]
@@ -308,16 +339,7 @@ mod test {
 
     #[test]
     fn win_rate() {
-        let stage = Stage::new(
-            ["45".into(), "H6".into()],
-            &[
-                "410".into(),
-                "24".into(),
-                "4J".into(),
-                "15".into(),
-                "2J".into(),
-            ],
-        );
+        let stage = Stage::new(["45".into(), "H6".into()], &[]);
         dbg!(stage.win_rate());
     }
 
@@ -325,13 +347,7 @@ mod test {
     fn win_rate_2() {
         let stage = Stage::new(
             ["28".into(), "13".into()],
-            &[
-                "310".into(),
-                "210".into(),
-                "38".into(),
-                "2J".into(),
-                "39".into(),
-            ],
+            &["310".into(), "210".into(), "38".into()],
         );
         dbg!(stage.win_rate());
     }
@@ -369,7 +385,9 @@ mod test {
 
     #[test]
     fn test_append() {
-        let cards = append_n_cards(&[], 5);
-        println!("{}", cards.len());
+        let cards = enumerate_n_cards(&[], 5);
+        assert_eq!(cards.count(), 2598960);
+        let cards = enumerate_n_cards(&[], 4);
+        assert_eq!(cards.count(), 52 * 51 * 50 * 49 / 4 / 3 / 2);
     }
 }
