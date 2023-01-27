@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, Ref, ref } from "vue";
+  import { computed, ref } from "vue";
   import { parseCards } from "./parseCard";
   import { calc, Odds } from "./calc";
 
@@ -78,7 +78,7 @@ Hand Rate: {{ ans && JSON.stringify(ans.hand_type_rates, null, 2) }}</pre
       <ul style="margin-left: -1.5em">
         <li>h = hearts 红心 ♥️</li>
         <li>d = diamonds 方块 ♦️</li>
-        <li>s = spades 黑桃 ♠</li>
+        <li>s = spades 黑桃 ♠️</li>
         <li>c = clubs 梅花 ♣️</li>
       </ul>
     </div>
