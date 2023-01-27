@@ -259,7 +259,7 @@ impl From<usize> for CardNum {
 impl From<&str> for CardNum {
     fn from(value: &str) -> Self {
         match value {
-            "1" | "A" => CardNum::Ace,
+            "1" | "A" | "a" => CardNum::Ace,
             "2" => CardNum::Two,
             "3" => CardNum::Three,
             "4" => CardNum::Four,
@@ -268,10 +268,10 @@ impl From<&str> for CardNum {
             "7" => CardNum::Seven,
             "8" => CardNum::Eight,
             "9" => CardNum::Nine,
-            "10" | "T" => CardNum::Ten,
-            "11" | "J" => CardNum::Jack,
-            "12" | "Q" => CardNum::Queen,
-            "13" | "K" => CardNum::King,
+            "10" | "T" | "t" => CardNum::Ten,
+            "11" | "J" | "j" => CardNum::Jack,
+            "12" | "Q" | "q" => CardNum::Queen,
+            "13" | "K" | "k" => CardNum::King,
             x => panic!("Invalid card type {x}"),
         }
     }
@@ -509,19 +509,19 @@ impl PartialOrd for Card {
 impl From<&str> for Card {
     fn from(value: &str) -> Self {
         match &value[0..1] {
-            "1" | "H" => Card {
+            "1" | "H" | "h" => Card {
                 suit: Suit::Heart,
                 num: CardNum::from(&value[1..]),
             },
-            "2" | "D" => Card {
+            "2" | "D" | "d" => Card {
                 suit: Suit::Diamond,
                 num: CardNum::from(&value[1..]),
             },
-            "3" | "C" => Card {
+            "3" | "C" | "c" => Card {
                 suit: Suit::Club,
                 num: CardNum::from(&value[1..]),
             },
-            "4" | "S" => Card {
+            "4" | "S" | "s" => Card {
                 suit: Suit::Spade,
                 num: CardNum::from(&value[1..]),
             },
@@ -635,6 +635,30 @@ mod test {
             ])
             .hand,
             HandType::FourOfAKind
+        );
+
+        assert_eq!(
+            calc_hand(&[
+                "2K".into(),
+                "32".into(),
+                "43".into(),
+                "14".into(),
+                "21".into()
+            ])
+            .hand,
+            HandType::HighCard
+        );
+
+        assert_eq!(
+            calc_hand(&[
+                "21".into(),
+                "3K".into(),
+                "4Q".into(),
+                "1J".into(),
+                "2T".into()
+            ])
+            .hand,
+            HandType::Straight
         );
 
         assert_eq!(
