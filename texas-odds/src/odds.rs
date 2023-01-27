@@ -229,7 +229,7 @@ fn fill_5_and_get_all_hands(cards: &[Card]) -> Vec<Hand> {
     let mut ans: Vec<Hand> = enumerate_n_cards(cards, 5 - cards.len())
         .map(|x| calc_hand(&x))
         .collect();
-    ans.sort();
+    ans.sort_unstable();
     ans
 }
 
@@ -238,7 +238,7 @@ fn fill_7_and_get_all_hands(cards: &[Card]) -> Vec<Hand> {
     let mut ans: Vec<Hand> = enumerate_n_cards(cards, 7 - cards.len())
         .map(|x| get_max_hand(&x))
         .collect();
-    ans.sort();
+    ans.sort_unstable();
     ans
 }
 
